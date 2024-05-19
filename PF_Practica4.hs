@@ -1,6 +1,10 @@
 import Data.List (subsequences, permutations)
 import Data.Set (Set)
 import qualified Data.Set as Set
+import System.Random (randomRIO)
+import Control.Monad (replicateM)
+
+
 
 
 -- Genera todas las permutaciones de una cadena de caracteres.
@@ -38,7 +42,7 @@ filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2)
 
 -- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
 letraFinalPermitida :: String -> Bool
-letraFinalPermitida s = last s `notElem` "kvwxKVWX"
+letraFinalPermitida s = last s `notElem` "hkvwxHKVWX"
 
 -- Comprueba si hay dos consonantes seguidas iguales en una palabra (excepto ll y rr).
 consonantesSeguidas :: String -> Bool
@@ -146,24 +150,64 @@ maximaPuntuacion xs = filter (\(x, n) -> n == maximaPuntuacion') xs
         maximaPuntuacion' = maximum $ map snd xs
 
 
-paresCaracteres :: [(Char, Char)]
-paresCaracteres = [('a', 'b'), ('c', 'd'), ('e', 'f'), ('g', 'h')]
+
+--paresCaracteres = [('a', 'e'), ('a', 'o'), ('a', 'i'), ('a', 'u'), ('e', 'o'), ('e', 'i'), ('e', 'u'), ('o', 'i'), ('o', 'u'), ('i', 'u')]
+
+caracterAleatorio :: IO Char
+caracterAleatorio = randomRIO ('a', 'z')
+
+vocalAleatoria :: IO Char
+vocalAleatoria = do
+    let vocales = ['a', 'e', 'i', 'o', 'u']
+    indice <- randomRIO (0, length vocales - 1)
+    return (vocales !! indice)
+
+-- Repartir una mano de 6 letras aleatorias
+repartirMano :: IO String
+repartirMano = replicateM 6 caracterAleatorio
+
+
+aumentarMano :: String -> Char -> Char -> IO String
+aumentarMano mano a b = do
+
+    putStrLn ("Presione 0 para "++ show a ++" y 1 para "++ show b )
+    
+    eleccion <- getLine
+    if(eleccion == "0")
+        then do
+            putStrLn ("Ha seleccionado el carácter " ++ show a)
+            return (mano ++ [a])
+        else 
+            if (eleccion == "1") 
+            then do
+                putStrLn ("Ha seleccionado el carácter " ++ show b)
+                return (mano ++ [b])
+            else do
+                putStrLn "Opción inválida. Intente de nuevo."
+                aumentarMano mano a b
+
 
 -- Ejemplo de uso
 main :: IO ()
 main = do
-    putStrLn "Por favor, ingrese una cadena de texto:"
-    entrada <- getLine
-    --print $ filtrarPalabras entrada
-    let indice = length entrada `mod` length paresCaracteres
-    let (caracter1, caracter2) = paresCaracteres !! indice
-    --let entradaModificada = entrada ++ [caracter1, caracter2]
+    --putStrLn "Por favor, ingrese una cadena de texto:"
+    putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
+    _ <- getLine
+    entrada <- repartirMano
+    putStrLn ("Su mano es: " ++ entrada)
+  
+    caracter1 <- vocalAleatoria
+    caracter2 <- vocalAleatoria
     putStrLn ("Tienes disponibles estos caracteres: " ++ show caracter1 ++ " y " ++ show caracter2)
     --putStrLn "Presione 0 para el primer carácter y 1 para el segundo carácter"
+    nuevaEntrada <- aumentarMano entrada caracter1 caracter2
+
     --eleccion <- getLine
     --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
     
-    let lista = filtrarPalabras entrada
-    -- print lista
+    putStrLn ("Su nueva mano es: " ++ nuevaEntrada ++ " \n Pulse cualquier tecla para continuar.")
+    _ <- getLine
+    let lista = filtrarPalabras nuevaEntrada
+    --print lista
 
     print $ maximaPuntuacion $ puntuarPalabras lista
