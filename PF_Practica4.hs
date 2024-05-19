@@ -103,15 +103,9 @@ cumpleSilabificacion xs = cumpleSilabificacion' (tail xs)
 filtrado6 :: [String] -> [String]
 filtrado6 = filter cumpleSilabificacion
 
-
-
-
-
-
 -- Filtra las palabras según todas las reglas de filtrado.
 filtrarPalabras :: String -> [String]
 filtrarPalabras = filtrado6 . filtrado5 . filtrado4 . filtrado3 . filtrado2 . filtrado1 . combinaciones
-
 
 
 {- 
@@ -173,4 +167,3 @@ main = do
     -- print lista
 
     print $ maximaPuntuacion $ puntuarPalabras lista
-
