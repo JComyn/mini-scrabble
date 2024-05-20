@@ -210,11 +210,14 @@ opcionesJuego = do
     putStrLn "Al comenzar a jugar se le repartirá una mano de 6 letras aleatorias."
     putStrLn "Y en el tablero se le mostraran 2 posibles letras adicionales."
   
-
+    putStrLn "Cada jugar dispondra de lo siguiente:"
     putStrLn " TU MANO:                TABLERO:"
     putStrLn " __________             __________"
-    putStrLn "| xxxxxx   |           |  y   y   |"
+    putStrLn "|  xxxxxx  |           |   y  y   |"
     putStrLn "|__________|           |__________|"
+
+    putStrLn "Pueden jugar hasta 2 jugadores."
+    putStrLn "En dicho caso, jugara primero el jugador 1 y luego el jugador 2."
 
     putStrLn "Para formar una palabra, seleccione una letra de su mano y una del tablero."
     putStrLn "La puntación de la palabra dependerá de las letras seleccionadas."
@@ -225,8 +228,26 @@ opcionesJuego = do
     main
 -- Ejemplo de uso
 
-jugar :: IO ()
-jugar = do
+
+resolucionJugada :: String -> IO Int
+resolucionJugada entrada = do
+    let lista = filtrarPalabras entrada
+    print lista
+    -- Se le pide al jugar que introduzca una jugada.
+    putStrLn ("Su nueva mano es: " ++ entrada)
+    jugada <- obtenerJugada entrada
+    puntuacion <- return $ puntuacion jugada
+    putStrLn ("La puntuación de su jugada es: " ++ show puntuacion)
+    let lista = filtrarPalabras entrada
+    --print lista
+
+    putStrLn "Las palabras con la máxima puntuación son:"
+    print $ maximaPuntuacion $ puntuarPalabras lista
+    return puntuacion
+
+
+jugar1Jugador :: IO ()
+jugar1Jugador = do
 --putStrLn "Por favor, ingrese una cadena de texto:"
     putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
     _ <- getLine
@@ -242,24 +263,58 @@ jugar = do
     --eleccion <- getLine
     --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
 
-
-    let lista = filtrarPalabras nuevaEntrada
-    print lista
-    -- Se le pide al jugar que introduzca una jugada.
-    putStrLn ("Su nueva mano es: " ++ nuevaEntrada)
-    jugada <- obtenerJugada nuevaEntrada
-    puntuacion <- return $ puntuacion jugada
-    putStrLn ("La puntuación de su jugada es: " ++ show puntuacion)
-    let lista = filtrarPalabras nuevaEntrada
-    --print lista
-
-    putStrLn "Las palabras con la máxima puntuación son:"
-    print $ maximaPuntuacion $ puntuarPalabras lista
+    -- resolucion de la jugada
+    resolucionJugada nuevaEntrada
     putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
     opcion <- getLine
     if opcion == "q"
         then putStrLn "¡Gracias por jugar!"
         else main
+
+
+jugar2Jugadores :: IO ()
+jugar2Jugadores = do
+    putStrLn "Se van a generar las letras del tablero:"
+    caracter1 <- vocalAleatoria
+    caracter2 <- vocalAleatoria
+
+    putStrLn "Ahora se repatira la mano al jugador 1"
+    entrada1 <- repartirMano
+    nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
+
+    puntuacion1 <- resolucionJugada nuevaEntrada1
+
+    putStrLn "Ahora se repatira la mano al jugador 2"
+    entrada2 <- repartirMano
+    nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
+
+    puntuacion2 <- resolucionJugada nuevaEntrada2
+
+    if puntuacion1 > puntuacion2
+        then putStrLn "¡El jugador 1 ha ganado!"
+        else if puntuacion2 > puntuacion1
+            then putStrLn "¡El jugador 2 ha ganado!"
+            else putStrLn "¡Empate!"
+
+    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
+    opcion <- getLine
+    if opcion == "q"
+        then putStrLn "¡Gracias por jugar!"
+        else main
+
+jugar :: IO ()
+jugar = do
+    putStrLn "¿Cuántos jugadores van a jugar?"
+    putStrLn "1. Un jugador"
+    putStrLn "2. Dos jugadores"
+    opcion <- getLine
+    if opcion == "1"
+        then jugar1Jugador
+        else if opcion == "2"
+            then jugar2Jugadores
+            else do
+                putStrLn "Opción inválida. Intente de nuevo."
+                jugar
 
 
 main :: IO ()
@@ -282,8 +337,6 @@ main = do
                 else do
                     putStrLn "Opción inválida. Intente de nuevo."
                     main
-
-
 
 
 
