@@ -1,8 +1,10 @@
-import Data.List (subsequences, permutations)
+import Data.List (subsequences, permutations, delete)
 import Data.Set (Set)
 import qualified Data.Set as Set
 import System.Random (randomRIO)
 import Control.Monad (replicateM)
+
+
 
 
 
@@ -187,6 +189,20 @@ aumentarMano mano a b = do
                 aumentarMano mano a b
 
 
+esSubconjunto :: String -> String -> Bool
+esSubconjunto [] _ = True
+esSubconjunto (x:xs) ys = x `elem` ys && esSubconjunto xs (delete x ys)
+
+
+obtenerJugada :: String -> IO String
+obtenerJugada mano = do
+    putStrLn "Introduzca su jugada y presione enter para continuar"
+    jugada <- getLine
+    if (jugada `elem` (filtrarPalabras mano))
+        then return jugada
+        else do
+            putStrLn "Jugada inválida. Intente de nuevo."
+            obtenerJugada mano
 -- Ejemplo de uso
 main :: IO ()
 main = do
@@ -204,10 +220,22 @@ main = do
 
     --eleccion <- getLine
     --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
-    
-    putStrLn ("Su nueva mano es: " ++ nuevaEntrada ++ " \n Pulse cualquier tecla para continuar.")
-    _ <- getLine
+
+
+    let lista = filtrarPalabras nuevaEntrada
+    print lista
+    -- Se le pide al jugar que introduzca una jugada.
+    putStrLn ("Su nueva mano es: " ++ nuevaEntrada)
+    jugada <- obtenerJugada nuevaEntrada
+    puntuacion <- return $ puntuacion jugada
+    putStrLn ("La puntuación de su jugada es: " ++ show puntuacion)
     let lista = filtrarPalabras nuevaEntrada
     --print lista
 
+    putStrLn "Las palabras con la máxima puntuación son:"
     print $ maximaPuntuacion $ puntuarPalabras lista
+    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
+    opcion <- getLine
+    if opcion == "q"
+        then putStrLn "¡Gracias por jugar!"
+        else main
