@@ -1,2 +1,13 @@
 IDEAS DE REGLAS (posibles de implementar):
 - Después de la Q solo puede haber una U
+- Ver en qué circunstancias puede aparecer una H, W, X (para que no haya palabras muy raras)
+- Despúes de una Z, solo hay A O U
+
+- Idea: Al generar la mano inicial, se deberían dar las letras comunes con más probabilidad que las raras
+    - En el scrabble hay más fichas con las letras comunes que de las raras
+
+- Idea: Que al generar las dos vocales, sean distintas siempre.
+
+- Ver qué hacer cuando no hay niguna palabra posible (cambiar la mano o algo)
+
+- implementar lo del diccionario

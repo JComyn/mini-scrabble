@@ -38,9 +38,13 @@ vocalesSeguidas2 :: String -> Bool
 vocalesSeguidas2 (x:y:z:xs) = (esVocal x && esVocal y && esVocal z) || vocalesSeguidas2 (y:z:xs)
 vocalesSeguidas2 _ = False
 
+letraq :: String -> Bool
+letraq (x:y:xs) = not (x == 'q' && y /= 'u') && letraq (y:xs)
+letraq _ = True
+
 -- Se queda con las palabras que no tengan dos vocales IGUALES seguidas.
 filtrado2 :: [String] -> [String]
-filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2)
+filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2) . filter letraq
 
 -- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
 letraFinalPermitida :: String -> Bool
@@ -155,18 +159,23 @@ maximaPuntuacion xs = filter (\(x, n) -> n == maximaPuntuacion') xs
 
 --paresCaracteres = [('a', 'e'), ('a', 'o'), ('a', 'i'), ('a', 'u'), ('e', 'o'), ('e', 'i'), ('e', 'u'), ('o', 'i'), ('o', 'u'), ('i', 'u')]
 
+-- Seleccionar una letra aleatoria.
 caracterAleatorio :: IO Char
 caracterAleatorio = randomRIO ('a', 'z')
 
+-- Seleccionar una vocal aleatoria.
 vocalAleatoria :: IO Char
 vocalAleatoria = do
     let vocales = ['a', 'e', 'i', 'o', 'u']
     indice <- randomRIO (0, length vocales - 1)
     return (vocales !! indice)
 
--- Repartir una mano de 6 letras aleatorias
+-- Repartir una mano de 6 letras aleatorias. Incluye 4 consonantes y 2 vocales.
 repartirMano :: IO String
-repartirMano = replicateM 6 caracterAleatorio
+repartirMano = do
+    caracteres <- replicateM 4 caracterAleatorio
+    vocales <- replicateM 2 vocalAleatoria
+    return (caracteres ++ vocales)
 
 
 aumentarMano :: String -> Char -> Char -> IO String
@@ -232,17 +241,19 @@ opcionesJuego = do
 resolucionJugada :: String -> IO Int
 resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
-    -- print lista
+    putStrLn "Las palabras válidas que se pueden formar con sus letras son: "
+    print lista
     -- Se le pide al jugar que introduzca una jugada.
     putStrLn ("Su nueva mano es: " ++ entrada)
     jugada <- obtenerJugada entrada
     puntuacion <- return $ puntuacion jugada
-    putStrLn ("La puntuación de su jugada (palabra con sus letras) es: " ++ show puntuacion)
+    putStrLn ("La puntuación de su jugada (palabra) es: " ++ show puntuacion)
     let lista = filtrarPalabras entrada
     --print lista
 
-    putStrLn "Las palabras con la máxima puntuación son:"
-    print $ maximaPuntuacion $ puntuarPalabras lista
+    putStrLn "Algunas palabras con la máxima puntuación son:"
+    -- Limitamos la salida a 5 palabras, para no saturar la consola.
+    print $ take 5 $ maximaPuntuacion $ puntuarPalabras lista
     return puntuacion
 
 
