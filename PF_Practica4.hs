@@ -177,7 +177,7 @@ repartirMano = do
     vocales <- replicateM 2 vocalAleatoria
     return (caracteres ++ vocales)
 
-
+-- Aumentar la mano con una letra del tablero.
 aumentarMano :: String -> Char -> Char -> IO String
 aumentarMano mano a b = do
 
@@ -197,12 +197,13 @@ aumentarMano mano a b = do
                 putStrLn "Opción inválida. Intente de nuevo."
                 aumentarMano mano a b
 
-
+-- Comprueba si una lista es un subconjunto de otra.
+-- No se usa, lo dejo por si acaso.
 esSubconjunto :: String -> String -> Bool
 esSubconjunto [] _ = True
 esSubconjunto (x:xs) ys = x `elem` ys && esSubconjunto xs (delete x ys)
 
-
+--
 obtenerJugada :: String -> IO String
 obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
@@ -214,30 +215,10 @@ obtenerJugada mano = do
             obtenerJugada mano
 
 
-opcionesJuego :: IO ()
-opcionesJuego = do 
-    putStrLn "Al comenzar a jugar se le repartirá una mano de 6 letras aleatorias."
-    putStrLn "Y en el tablero se le mostraran 2 posibles letras adicionales."
-  
-    putStrLn "Cada jugar dispondra de lo siguiente:"
-    putStrLn " TU MANO:                TABLERO:"
-    putStrLn " __________             __________"
-    putStrLn "|  xxxxxx  |           |   y  y   |"
-    putStrLn "|__________|           |__________|"
-
-    putStrLn "Pueden jugar hasta 2 jugadores."
-    putStrLn "En dicho caso, jugara primero el jugador 1 y luego el jugador 2."
-
-    putStrLn "Para formar una palabra, seleccione una letra de su mano y una del tablero."
-    putStrLn "La puntación de la palabra dependerá de las letras seleccionadas."
-    putStrLn "Las letras del tablero y de la mano se pueden usar una sola vez."
-    putStrLn "Puede que la palabra formada no sea válida, en ese caso, intente de nuevo."
-    putStrLn "Pulse cualquier tecla para volver al menú principal. ¡Buena suerte!"
-    _ <- getLine
-    main
--- Ejemplo de uso
-
-
+-- Resolución de la jugada de un jugador.
+-- Se pide una jugada valida, si no es valida se pide otra.
+-- Devuelve la puntuación de la jugada.
+-- Entrada: mano del jugador con el caracter adicional.
 resolucionJugada :: String -> IO Int
 resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
@@ -256,7 +237,7 @@ resolucionJugada entrada = do
     print $ take 5 $ maximaPuntuacion $ puntuarPalabras lista
     return puntuacion
 
-
+-- Jugar con un solo jugador.
 jugar1Jugador :: IO ()
 jugar1Jugador = do
 --putStrLn "Por favor, ingrese una cadena de texto:"
@@ -282,7 +263,7 @@ jugar1Jugador = do
         then putStrLn "¡Gracias por jugar!"
         else main
 
-
+-- Jugar con dos jugadores.
 jugar2Jugadores :: IO ()
 jugar2Jugadores = do
     putStrLn "Se van a generar las letras del tablero:"
@@ -291,16 +272,21 @@ jugar2Jugadores = do
 
     putStrLn "Ahora se repatira la mano al jugador 1"
     entrada1 <- repartirMano
+    putStrLn ("Su mano es: " ++ entrada1)
     nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
 
     puntuacion1 <- resolucionJugada nuevaEntrada1
 
     putStrLn "Ahora se repatira la mano al jugador 2"
     entrada2 <- repartirMano
+    putStrLn ("Su mano es: " ++ entrada2)
     nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
 
     puntuacion2 <- resolucionJugada nuevaEntrada2
 
+    putStrLn "Puntuación final:"
+    putStrLn ("Jugador 1: " ++ show puntuacion1)
+    putStrLn ("Jugador 2: " ++ show puntuacion2)
     if puntuacion1 > puntuacion2
         then putStrLn "¡El jugador 1 ha ganado!"
         else if puntuacion2 > puntuacion1
@@ -313,6 +299,7 @@ jugar2Jugadores = do
         then putStrLn "¡Gracias por jugar!"
         else main
 
+-- Juego Mini-Scrabble.
 jugar :: IO ()
 jugar = do
     putStrLn "¿Cuántos jugadores van a jugar?"
@@ -327,6 +314,28 @@ jugar = do
                 putStrLn "Opción inválida. Intente de nuevo."
                 jugar
 
+-- Menú de opciones del juego.
+opcionesJuego :: IO ()
+opcionesJuego = do 
+    putStrLn "Al comenzar a jugar se le repartirá una mano de 6 letras aleatorias."
+    putStrLn "Y en el tablero se le mostraran 2 posibles letras adicionales."
+  
+    putStrLn "Cada jugar dispondra de lo siguiente:"
+    putStrLn " TU MANO:                TABLERO:"
+    putStrLn " __________             __________"
+    putStrLn "|  xxxxxx  |           |   y  y   |"
+    putStrLn "|__________|           |__________|"
+
+    putStrLn "Pueden jugar hasta 2 jugadores."
+    putStrLn "En dicho caso, jugara primero el jugador 1 y luego el jugador 2."
+
+    putStrLn "Para formar una palabra, seleccione una letra de su mano y una del tablero."
+    putStrLn "La puntación de la palabra dependerá de las letras seleccionadas."
+    putStrLn "Las letras del tablero y de la mano se pueden usar una sola vez."
+    putStrLn "Puede que la palabra formada no sea válida, en ese caso, intente de nuevo."
+    putStrLn "Pulse cualquier tecla para volver al menú principal. ¡Buena suerte!"
+    _ <- getLine
+    main
 
 main :: IO ()
 main = do
