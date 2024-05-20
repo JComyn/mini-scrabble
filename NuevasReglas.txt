@@ -1,7 +1,7 @@
 IDEAS DE REGLAS (posibles de implementar):
-- Después de la Q solo puede haber una U
-- Ver en qué circunstancias puede aparecer una H, W, X (para que no haya palabras muy raras)
-- Despúes de una Z, solo hay A O U
+- Después de la Q solo puede haber una U --> HECHO
+- Ver en qué circunstancias puede aparecer una H, Y, W, X (para que no haya palabras muy raras)
+- Despúes de una Z, solo hay A o U o O --> HECHO
 - Diptongos e hiatos comunes: ai, ei, oi, au, eu, ia, ie, io, ua, ue, uo
 - Combinaciones raras o poco comunes: ae (aereo, caer), ao, oe (proeza, poema)
 

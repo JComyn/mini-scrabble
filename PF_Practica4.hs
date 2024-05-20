@@ -105,7 +105,10 @@ cumpleSilabificacion xs = cumpleSilabificacion' (tail xs)
           cumpleSilabificacion' (x:y:ys)
             | esVocal x && esVocal y = cumpleSilabificacion' (y:ys) -- Diptongo o hiato
             | esConsonante x && esConsonante y = (x, y) `elem` [('l', 'l'), ('r', 'r'),('n','c'),('d','r')] && cumpleSilabificacion' (y:ys)
-            | esConsonante x && esVocal y = cumpleSilabificacion' (y:ys)
+            | esConsonante x && esVocal y = if(x=='z') 
+                                                then (y=='a' || y=='u' || y=='o') && cumpleSilabificacion' (y:ys) 
+                                                else if(x == 'q') then y == 'u' && cumpleSilabificacion' (y:ys)
+                                                else cumpleSilabificacion' (y:ys)
             | esVocal x && esConsonante y = cumpleSilabificacion' (y:ys)
             | otherwise = False
 
