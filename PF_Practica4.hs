@@ -203,10 +203,31 @@ obtenerJugada mano = do
         else do
             putStrLn "Jugada inválida. Intente de nuevo."
             obtenerJugada mano
+
+
+opcionesJuego :: IO ()
+opcionesJuego = do 
+    putStrLn "Al comenzar a jugar se le repartirá una mano de 6 letras aleatorias."
+    putStrLn "Y en el tablero se le mostraran 2 posibles letras adicionales."
+  
+
+    putStrLn " TU MANO:                TABLERO:"
+    putStrLn " __________             __________"
+    putStrLn "| xxxxxx   |           |  y   y   |"
+    putStrLn "|__________|           |__________|"
+
+    putStrLn "Para formar una palabra, seleccione una letra de su mano y una del tablero."
+    putStrLn "La puntación de la palabra dependerá de las letras seleccionadas."
+    putStrLn "Las letras del tablero y de la mano se pueden usar una sola vez."
+    putStrLn "Puede que la palabra formada no sea válida, en ese caso, intente de nuevo."
+    putStrLn "Pulse cualquier tecla para volver al menú principal. ¡Buena suerte!"
+    _ <- getLine
+    main
 -- Ejemplo de uso
-main :: IO ()
-main = do
-    --putStrLn "Por favor, ingrese una cadena de texto:"
+
+jugar :: IO ()
+jugar = do
+--putStrLn "Por favor, ingrese una cadena de texto:"
     putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
     _ <- getLine
     entrada <- repartirMano
@@ -239,3 +260,32 @@ main = do
     if opcion == "q"
         then putStrLn "¡Gracias por jugar!"
         else main
+
+
+main :: IO ()
+main = do
+    putStrLn "Bienvenido a Mini-Scrabble"
+    putStrLn "¿Que desea hacer?"
+    putStrLn "1. Jugar"
+    putStrLn "2. Como se juega"
+    putStrLn "3. Salir"
+    opcion <- getLine
+    if(opcion == "1") 
+        then do
+            jugar
+        else if (opcion == "2")
+            then do 
+                opcionesJuego
+            else if (opcion == "3")
+                then do
+                    putStrLn "¡Gracias por jugar!"
+                else do
+                    putStrLn "Opción inválida. Intente de nuevo."
+                    main
+
+
+
+
+
+
+    
