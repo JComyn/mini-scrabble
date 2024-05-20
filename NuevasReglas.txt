@@ -1,0 +1,2 @@
+IDEAS DE REGLAS (posibles de implementar):
+- Después de la Q solo puede haber una U

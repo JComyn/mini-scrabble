@@ -86,7 +86,7 @@ filtrado4 = filter (not . consonantesSeguidas)
 -- Consonante vocal o vocal.
 
 empiezaBien :: String -> Bool
-empiezaBien (x:y:_) = esVocal x || (esConsonante x && esConsonante y && (x,y) `elem` [('b', 'l'), ('c', 'r'), ('d', 'r'), ('f', 'l'), ('f', 'r'), ('g', 'r'), ('p', 'l'), ('p', 'r'), ('t', 'r'), ('t', 'l'), ('c', 'h'), ('l', 'l')]) || (esConsonante x && esVocal y)
+empiezaBien (x:y:_) = esVocal x || (esConsonante x && esConsonante y && (x,y) `elem` [('b', 'l'), ('c', 'r'), ('d', 'r'), ('f', 'l'), ('f', 'r'), ('g', 'r'), ('p', 'l'), ('p', 'r'), ('t', 'r'), ('c', 'h'), ('l', 'l')]) || (esConsonante x && esVocal y)
 empiezaBien _ = False
 
 -- Filtra las palabras que empiezan con dos consonantes permitidas.
@@ -175,12 +175,12 @@ aumentarMano mano a b = do
     putStrLn ("Presione 0 para "++ show a ++" y 1 para "++ show b )
     
     eleccion <- getLine
-    if(eleccion == "0")
+    if eleccion == "0"
         then do
             putStrLn ("Ha seleccionado el carácter " ++ show a)
             return (mano ++ [a])
         else 
-            if (eleccion == "1") 
+            if eleccion == "1" 
             then do
                 putStrLn ("Ha seleccionado el carácter " ++ show b)
                 return (mano ++ [b])
@@ -198,10 +198,10 @@ obtenerJugada :: String -> IO String
 obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
     jugada <- getLine
-    if (jugada `elem` (filtrarPalabras mano))
+    if jugada `elem` filtrarPalabras mano
         then return jugada
         else do
-            putStrLn "Jugada inválida. Intente de nuevo."
+            putStrLn "Jugada inválida, palabra no existente. Intente de nuevo."
             obtenerJugada mano
 
 
@@ -232,12 +232,12 @@ opcionesJuego = do
 resolucionJugada :: String -> IO Int
 resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
-    print lista
+    -- print lista
     -- Se le pide al jugar que introduzca una jugada.
     putStrLn ("Su nueva mano es: " ++ entrada)
     jugada <- obtenerJugada entrada
     puntuacion <- return $ puntuacion jugada
-    putStrLn ("La puntuación de su jugada es: " ++ show puntuacion)
+    putStrLn ("La puntuación de su jugada (palabra con sus letras) es: " ++ show puntuacion)
     let lista = filtrarPalabras entrada
     --print lista
 
@@ -325,13 +325,13 @@ main = do
     putStrLn "2. Como se juega"
     putStrLn "3. Salir"
     opcion <- getLine
-    if(opcion == "1") 
+    if opcion == "1" 
         then do
             jugar
-        else if (opcion == "2")
+        else if opcion == "2"
             then do 
                 opcionesJuego
-            else if (opcion == "3")
+            else if opcion == "3"
                 then do
                     putStrLn "¡Gracias por jugar!"
                 else do
