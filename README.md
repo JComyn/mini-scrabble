@@ -11,9 +11,5 @@ La mayoría de los pasatiempos típicos de los periódicos o los juegos de mesa 
 ### Reglas de Validación
 
 Algunas reglas básicas incluyen:
-- Las consonantes que pueden aparecer al final de una sílaba son L, N, S, R.
-- Solo aparecen dos consonantes al inicio de una sílaba si la segunda es una L o R.
-- La CH es considerada una única letra.
-- Tres consonantes pueden aparecer seguidas solo en casos específicos, como una final de sílaba seguida de un grupo doble al inicio de la siguiente sílaba.
-- La N se convierte en M antes de B o P.
+- Completar
 
