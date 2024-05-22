@@ -42,9 +42,14 @@ letraq :: String -> Bool
 letraq (x:y:xs) = not (x == 'q' && y /= 'u') && letraq (y:xs)
 letraq _ = True
 
+letraz :: String -> Bool
+letraz (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o')))
+letraz _ = True
+
 -- Se queda con las palabras que no tengan dos vocales IGUALES seguidas.
 filtrado2 :: [String] -> [String]
-filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2) . filter letraq
+filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2) . filter letraq . filter letraz
+
 
 -- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
 letraFinalPermitida :: String -> Bool
@@ -104,11 +109,8 @@ cumpleSilabificacion xs = cumpleSilabificacion' (tail xs)
           cumpleSilabificacion' [x] = True
           cumpleSilabificacion' (x:y:ys)
             | esVocal x && esVocal y = cumpleSilabificacion' (y:ys) -- Diptongo o hiato
-            | esConsonante x && esConsonante y = (x, y) `elem` [('l', 'l'), ('r', 'r'),('n','c'),('d','r')] && cumpleSilabificacion' (y:ys)
-            | esConsonante x && esVocal y = if(x=='z') 
-                                                then (y=='a' || y=='u' || y=='o') && cumpleSilabificacion' (y:ys) 
-                                                else if(x == 'q') then y == 'u' && cumpleSilabificacion' (y:ys)
-                                                else cumpleSilabificacion' (y:ys)
+            | esConsonante x && esConsonante y = (x, y) `elem` [('l', 'l'), ('r', 'r'),('n','c'),('d','r'), ('s','h'),('n','h'),('l','p')] && cumpleSilabificacion' (y:ys)
+            | esConsonante x && esVocal y = cumpleSilabificacion' (y:ys)
             | esVocal x && esConsonante y = cumpleSilabificacion' (y:ys)
             | otherwise = False
 
@@ -174,11 +176,59 @@ vocalAleatoria = do
     return (vocales !! indice)
 
 -- Repartir una mano de 6 letras aleatorias. Incluye 4 consonantes y 2 vocales.
-repartirMano :: IO String
-repartirMano = do
-    caracteres <- replicateM 4 caracterAleatorio
-    vocales <- replicateM 2 vocalAleatoria
-    return (caracteres ++ vocales)
+-- 12 a's, 12 e's, 
+-- 9 o's
+-- 6 i's, 6 s's, r's
+-- 5 u's, 5 d's, 5 c's, 5 l's
+-- 4 t's,  
+-- 3 h's
+-- 2 g's, b's, m's, 'p's
+-- 1 f, v, y, q, j, ll, rr, x, z
+bolsaFichas :: [Char]
+bolsaFichas = [ 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a',
+                'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+                'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o',
+                'i', 'i', 'i', 'i', 'i', 'i',
+                's', 's', 's', 's', 's', 's',
+                'r', 'r', 'r', 'r', 'r', 'r',
+                'u', 'u', 'u', 'u', 'u',
+                'd', 'd', 'd', 'd', 'd',
+                'c', 'c', 'c', 'c', 'c',
+                'l', 'l', 'l', 'l', 'l',
+                't', 't', 't', 't',
+                'h', 'h', 'h',
+                'g', 'g',
+                'b', 'b',
+                'm', 'm',
+                'p', 'p',
+                'f','v','y','q','j','x','z']
+
+-- Recibe la primera bolsa de fichas y la mano del jugador. 
+-- Devuelve la bolsa de fichas actualizada.
+nuevaBolsa :: [Char] -> [Char] -> [Char]
+nuevaBolsa xs [] = xs
+nuevaBolsa xs (y:ys) = nuevaBolsa (delete y xs) ys
+
+
+
+--repartir una mano de 6 letras aletorias de la bolsa de fichas
+repartirMano :: [Char] -> IO [Char]
+repartirMano xs = repartirMano' xs 6
+
+repartirMano' :: [Char] -> Int -> IO [Char]
+repartirMano' _ 0 = return []
+repartirMano' xs n = do
+    i <- randomRIO (0, length xs - 1)
+    let (ys, zs) = splitAt i xs
+    rest <- repartirMano' (ys ++ tail zs) (n - 1)
+    return ((xs !! i) : rest)
+
+
+--repartirMano :: IO String
+--repartirMano = do
+--    caracteres <- replicateM 4 caracterAleatorio
+--    vocales <- replicateM 2 vocalAleatoria
+--    return (caracteres ++ vocales)
 
 -- Aumentar la mano con una letra del tablero.
 aumentarMano :: String -> Char -> Char -> IO String
@@ -246,7 +296,7 @@ jugar1Jugador = do
 --putStrLn "Por favor, ingrese una cadena de texto:"
     putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
     _ <- getLine
-    entrada <- repartirMano
+    entrada <- repartirMano bolsaFichas
     putStrLn ("Su mano es: " ++ entrada)
   
     caracter1 <- vocalAleatoria
@@ -274,14 +324,18 @@ jugar2Jugadores = do
     caracter2 <- vocalAleatoria
 
     putStrLn "Ahora se repatira la mano al jugador 1"
-    entrada1 <- repartirMano
+    entrada1 <- repartirMano bolsaFichas
+    -- Actualizar la bolsa de fichas.
+    let nuevaBolsaFichas = nuevaBolsa bolsaFichas entrada1
+    -- putStrLn ("la nueva bolsa es : " ++ nuevaBolsaFichas)
+
     putStrLn ("Su mano es: " ++ entrada1)
     nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
 
     puntuacion1 <- resolucionJugada nuevaEntrada1
 
     putStrLn "Ahora se repatira la mano al jugador 2"
-    entrada2 <- repartirMano
+    entrada2 <- repartirMano nuevaBolsaFichas
     putStrLn ("Su mano es: " ++ entrada2)
     nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
 
