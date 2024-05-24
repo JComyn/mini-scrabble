@@ -175,7 +175,7 @@ vocalAleatoria = do
     indice <- randomRIO (0, length vocales - 1)
     return (vocales !! indice)
 
--- Repartir una mano de 6 letras aleatorias. Incluye 4 consonantes y 2 vocales.
+-- Define la bolsa de fichas del juego.
 -- 12 a's, 12 e's, 
 -- 9 o's
 -- 6 i's, 6 s's, r's
@@ -211,7 +211,7 @@ nuevaBolsa xs (y:ys) = nuevaBolsa (delete y xs) ys
 
 
 
---repartir una mano de 6 letras aletorias de la bolsa de fichas
+-- Recibe una bolsa de fichas y reparte una mano de 6 letras aleatorias.
 repartirMano :: [Char] -> IO [Char]
 repartirMano xs = repartirMano' xs 6
 
@@ -256,7 +256,8 @@ esSubconjunto :: String -> String -> Bool
 esSubconjunto [] _ = True
 esSubconjunto (x:xs) ys = x `elem` ys && esSubconjunto xs (delete x ys)
 
---
+-- Comprueba que la jugada sea válida, es decir, que la palabra esté en la lista de palabras válidas.
+-- Si no es válida, se pide otra jugada.
 obtenerJugada :: String -> IO String
 obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
@@ -293,7 +294,6 @@ resolucionJugada entrada = do
 -- Jugar con un solo jugador.
 jugar1Jugador :: IO ()
 jugar1Jugador = do
---putStrLn "Por favor, ingrese una cadena de texto:"
     putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
     _ <- getLine
     entrada <- repartirMano bolsaFichas
@@ -304,10 +304,8 @@ jugar1Jugador = do
     putStrLn ("Tienes disponibles estos caracteres: " ++ show caracter1 ++ " y " ++ show caracter2)
     --putStrLn "Presione 0 para el primer carácter y 1 para el segundo carácter"
     nuevaEntrada <- aumentarMano entrada caracter1 caracter2
-
     --eleccion <- getLine
     --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
-
     -- resolucion de la jugada
     resolucionJugada nuevaEntrada
     putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
