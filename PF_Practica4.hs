@@ -118,10 +118,62 @@ cumpleSilabificacion xs = cumpleSilabificacion' (tail xs)
 filtrado6 :: [String] -> [String]
 filtrado6 = filter cumpleSilabificacion
 
+-- No se si llamarlo filtrado7 por que no se puede meter bien en filtradoPalabras por las monadas 
+filtrado7 :: [String] -> IO [String]
+filtrado7 lista = do
+    diccionario <- cargarDiccionario "dic.txt"
+    return $ filter (`Set.member` diccionario) lista
+
+
 -- Filtra las palabras según todas las reglas de filtrado.
 filtrarPalabras :: String -> [String]
 filtrarPalabras = filtrado6 . filtrado5 . filtrado4 . filtrado3 . filtrado2 . filtrado1 . combinaciones
 
+
+-- Diccionario de palabras válidas.
+cargarDiccionario :: String -> IO (Set String)
+cargarDiccionario path = do
+    contenido <- readFile path
+    return $ Set.fromList $ lines contenido
+
+
+tieneEnie :: String -> Bool
+tieneEnie palabra = 'ñ' `elem` palabra
+
+tieneTilde :: String -> Bool
+tieneTilde = any (`elem` "áéíóú") 
+
+tieneEspacio :: String -> Bool
+tieneEspacio = any (== ' ')
+
+-- Poner vocal normal sin tilde (normalizar).
+normalizar :: String -> String
+normalizar [] = []
+normalizar (x:xs) 
+  | x == 'á' = 'a' : normalizar xs
+  | x == 'é' = 'e' : normalizar xs
+  | x == 'í' = 'i' : normalizar xs
+  | x == 'ó' = 'o' : normalizar xs
+  | x == 'ú' = 'u' : normalizar xs
+  | otherwise = x : normalizar xs
+
+filtraDiccionario :: String -> IO ()
+filtraDiccionario path = do
+    contenido <- readFile path
+    let palabras = lines contenido
+    let sinEnie = filter (not . tieneEnie) palabras
+    let sinEspacios = filter (not . tieneEspacio) sinEnie
+    let normalizarDiccionario = map normalizar sinEspacios
+    writeFile "dicFiltrado.txt" (unlines normalizarDiccionario)
+
+
+imprimeDiccionario :: IO ()
+imprimeDiccionario = do
+    diccionario <-cargarDiccionario "dicFiltrado.txt"
+    let listaDiccionario = Set.toList diccionario
+    print listaDiccionario
+    print "á"
+    putStrLn "á"
 
 {- 
 (No usamos ñ)
