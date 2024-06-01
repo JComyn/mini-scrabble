@@ -50,7 +50,7 @@ letraQ _ = True
 
 -- Tras la letra z siempre tiene que ir a, u, o.
 letraZ :: String -> Bool
-letraZ (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o'))) && letraZ (y:xs)
+letraZ (x:y:xs) = not (x == 'z' && (y /= 'a' && y /= 'u' && y /= 'o'))
 letraZ _ = True
 
 -- Antes de una P, no puede haber una N (es siempre MP).
