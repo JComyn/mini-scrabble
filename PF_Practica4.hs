@@ -55,17 +55,17 @@ letraZ _ = True
 
 -- Antes de una P, no puede haber una N (es siempre MP).
 letrasMP :: String -> Bool
-letrasMP (x:y:xs) = not (x == 'n' && y == 'p') && letraP (y:xs)
+letrasMP (x:y:xs) = not (x == 'n' && y == 'p') && letrasMP (y:xs)
 letrasMP _ = True
 
 -- Antes de una B, no puede haber una N (es siempre MB).
 letrasMB :: String -> Bool
-letrasMB (x:y:xs) = not (x == 'n' && y == 'b') && letraB (y:xs)
+letrasMB (x:y:xs) = not (x == 'n' && y == 'b') && letrasMB (y:xs)
 letrasMB _ = True
 
 -- Tras una N/D, no puede haber B (siempre es NV/DV)
 letrasNV :: String -> Bool
-letrasNV (x:y:xs) = not ((x == 'n' || x == 'd') && y == 'b') && letraN (y:xs)
+letrasNV (x:y:xs) = not ((x == 'n' || x == 'd') && y == 'b') && letrasNV (y:xs)
 letrasNV _ = True
 
 -- Después de las sílabas iniciales ha-, he-, hi-, hu- debe ir B (no puede ir V).
