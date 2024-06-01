@@ -153,8 +153,8 @@ filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filt
 -- No se si llamarlo filtrado7 por que no se puede meter bien en filtradoPalabras por las monadas 
 filtrado7 :: [String] -> IO [String]
 filtrado7 lista = do
-    diccionario <- cargarDiccionario "dic.txt"
-    return $ filter (`Set.member` diccionario) lista
+    dicc <- cargarDiccionario "dicFiltrado.txt"
+    return $ filter (`Set.member` dicc) lista
 
 
 -- Diccionario de palabras válidas.
@@ -181,16 +181,42 @@ normalizar (x:xs)
   | x == 'í' = 'i' : normalizar xs
   | x == 'ó' = 'o' : normalizar xs
   | x == 'ú' = 'u' : normalizar xs
+  | x == 'A' = 'a' : normalizar xs
+  | x == 'B' = 'b' : normalizar xs
+  | x == 'C' = 'c' : normalizar xs
+  | x == 'D' = 'd' : normalizar xs
+  | x == 'E' = 'e' : normalizar xs
+  | x == 'F' = 'f' : normalizar xs
+  | x == 'G' = 'g' : normalizar xs
+  | x == 'H' = 'h' : normalizar xs
+  | x == 'I' = 'i' : normalizar xs
+  | x == 'J' = 'j' : normalizar xs
+  | x == 'K' = 'k' : normalizar xs
+  | x == 'L' = 'l' : normalizar xs
+  | x == 'M' = 'm' : normalizar xs
+  | x == 'N' = 'n' : normalizar xs
+  | x == 'O' = 'o' : normalizar xs
+  | x == 'P' = 'p' : normalizar xs
+  | x == 'Q' = 'q' : normalizar xs
+  | x == 'R' = 'r' : normalizar xs
+  | x == 'S' = 's' : normalizar xs
+  | x == 'T' = 't' : normalizar xs
+  | x == 'U' = 'u' : normalizar xs
+  | x == 'V' = 'v' : normalizar xs
+  | x == 'W' = 'w' : normalizar xs
+  | x == 'X' = 'x' : normalizar xs
+  | x == 'Y' = 'y' : normalizar xs
+  | x == 'Z' = 'z' : normalizar xs
   | otherwise = x : normalizar xs
 
-filtraDiccionario :: String -> IO ()
-filtraDiccionario path = do
+normalizaDiccionario :: String -> IO ()
+normalizaDiccionario path = do
     contenido <- readFile path
     let palabras = lines contenido
     let sinEnie = filter (not . tieneEnie) palabras
     let sinEspacios = filter (not . tieneEspacio) sinEnie
-    let normalizarDiccionario = map normalizar sinEspacios
-    writeFile "dicFiltrado.txt" (unlines normalizarDiccionario)
+    let diccNormalizado = map normalizar sinEspacios
+    writeFile "dicFiltrado.txt" (unlines diccNormalizado)
 
 
 imprimeDiccionario :: IO ()
@@ -343,7 +369,9 @@ obtenerJugada :: String -> IO String
 obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
     jugada <- getLine
-    if jugada `elem` filtrarPalabras mano
+    let lista = filtrarPalabras mano
+    palabrasDiccionario <- filtrado7 lista
+    if jugada `elem` palabrasDiccionario
         then return jugada
         else do
             putStrLn "Jugada inválida, palabra no existente. Intente de nuevo."
@@ -357,19 +385,19 @@ obtenerJugada mano = do
 resolucionJugada :: String -> IO Int
 resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
+    palabrasDiccionario <- filtrado7 lista
     putStrLn "Las palabras válidas que se pueden formar con sus letras son: "
-    print lista
+    print palabrasDiccionario
     -- Se le pide al jugar que introduzca una jugada.
     putStrLn ("Su nueva mano es: " ++ entrada)
     jugada <- obtenerJugada entrada
     puntuacion <- return $ puntuacion jugada
     putStrLn ("La puntuación de su jugada (palabra) es: " ++ show puntuacion)
-    let lista = filtrarPalabras entrada
-    --print lista
+    
 
     putStrLn "Algunas palabras con la máxima puntuación son:"
     -- Limitamos la salida a 5 palabras, para no saturar la consola.
-    print $ take 5 $ maximaPuntuacion $ puntuarPalabras lista
+    print $ take 5 $ maximaPuntuacion $ puntuarPalabras palabrasDiccionario
     return puntuacion
 
 -- Jugar con un solo jugador.
