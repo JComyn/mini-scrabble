@@ -6,9 +6,6 @@ import Control.Monad (replicateM)
 
 
 
-
-
-
 -- Genera todas las permutaciones de una cadena de caracteres.
 combinaciones :: String -> [String]
 combinaciones s = eliminarDuplicados $ concatMap (filter (not . null) . permutations) (subsequences s)
@@ -29,6 +26,7 @@ esConsonante = not . esVocal
 filtroLongitud :: [String] -> [String]
 filtroLongitud = filter (\x -> length x > 3)
 
+
 -- Comprueba si hay dos vocales IGUALES seguidas iguales en una palabra.
 vocalesIgualesSeguidas :: String -> Bool
 vocalesIgualesSeguidas (x:y:xs) = (esVocal x && esVocal y && x==y) || vocalesIgualesSeguidas (y:xs)
@@ -39,6 +37,12 @@ vocalesTresSeguidas :: String -> Bool
 vocalesTresSeguidas (x:y:z:xs) = (esVocal x && esVocal y && esVocal z) || vocalesTresSeguidas (y:z:xs)
 vocalesTresSeguidas _ = False
 
+-- Se queda con las palabras que no tengan dos vocales IGUALES seguidas ni tres vocales seguidas.
+-- Además, se queda con las palabras que cumplan con las reglas de las letras q y z.
+filtroVocales :: [String] -> [String]
+filtroVocales = filter (not . vocalesIgualesSeguidas) . filter (not . vocalesTresSeguidas)
+
+
 -- Tras la letra q siempre tiene que ir la letra u.
 letraQ :: String -> Bool
 letraQ (x:y:xs) = not (x == 'q' && y /= 'u') && letraQ (y:xs)
@@ -46,18 +50,40 @@ letraQ _ = True
 
 -- Tras la letra z siempre tiene que ir a, u, o.
 letraZ :: String -> Bool
-letraZ (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o')))
+letraZ (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o'))) && letraZ (y:xs)
 letraZ _ = True
 
--- Se queda con las palabras que no tengan dos vocales IGUALES seguidas ni tres vocales seguidas.
--- Además, se queda con las palabras que cumplan con las reglas de las letras q y z.
-filtroVocales :: [String] -> [String]
-filtroVocales = filter (not . vocalesIgualesSeguidas) . filter (not . vocalesTresSeguidas) . filter letraQ . filter letraZ
+-- Antes de una P, no puede haber una N (es siempre MP).
+letrasMP :: String -> Bool
+letrasMP (x:y:xs) = not (x == 'n' && y == 'p') && letraP (y:xs)
+letrasMP _ = True
 
+-- Antes de una B, no puede haber una N (es siempre MB).
+letrasMB :: String -> Bool
+letrasMB (x:y:xs) = not (x == 'n' && y == 'b') && letraB (y:xs)
+letrasMB _ = True
 
--- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
-letraFinalPermitida :: String -> Bool
-letraFinalPermitida s = last s `notElem` "hkvwxHKVWX"
+-- Tras una N/D, no puede haber B (siempre es NV/DV)
+letrasNV :: String -> Bool
+letrasNV (x:y:xs) = not ((x == 'n' || x == 'd') && y == 'b') && letraN (y:xs)
+letrasNV _ = True
+
+-- Después de las sílabas iniciales ha-, he-, hi-, hu- debe ir B (no puede ir V).
+-- Por ejemplo: hábil, hebilla, híbrido, hubo
+silabasConH :: String -> Bool
+silabasConH (x:y:z:xs) = not (x == 'h' && (y == 'a' || y == 'e' || y == 'i' || y == 'u') && z == 'v') 
+silabasConH _ = True
+
+-- Después de las sílabas iniciales ra-, ro-, ru- debe ir B (no puede ir V).
+-- Por ejemplo: rábano, roble, rubio
+silabasConR :: String -> Bool
+silabasConR (x:y:z:xs) = not (x == 'r' && (y == 'a' || y == 'o' || y == 'u') && z == 'v') 
+silabasConR _ = True
+
+-- Filtra según las reglas ortográficas definidas anteriormente.
+filtroOrtografia :: [String] -> [String]
+filtroOrtografia = filter letraQ . filter letraZ . filter letrasMP . filter letrasMB . filter letrasNV . filter silabasConH . filter silabasConR
+
 
 -- Comprueba si hay tres consonantes seguidas en una palabra.
 consonantesSeguidas :: String -> Bool
@@ -66,6 +92,14 @@ consonantesSeguidas xs = consonantesSeguidas' (tail xs)
         consonantesSeguidas' (x:y:z:xs) = (esConsonante x && esConsonante y && esConsonante z) || consonantesSeguidas' (y:z:xs)
         consonantesSeguidas' _ = False
         
+-- Se queda con las palabras que no tengan tres consonantes seguidas.
+filtroConsonantes :: [String] -> [String]
+filtroConsonantes = filter (not . consonantesSeguidas)
+
+
+-- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
+letraFinalPermitida :: String -> Bool
+letraFinalPermitida s = last s `notElem` "hkvwxHKVWX"
 
 -- Se queda con los dos últimos caracteres de una palabra.
 ultimosDosCaracteres :: String -> String
@@ -77,15 +111,9 @@ terminaEnDosConsonantes [x] = True
 terminaEnDosConsonantes s = esConsonante x && esConsonante y
     where [x, y] = ultimosDosCaracteres s
 
-
 -- Se queda con las palabras cuya última letra sea válida y no termine en dos consonantes seguidas.
 filtroFinalPalabra :: [String] -> [String]
 filtroFinalPalabra = filter (not . terminaEnDosConsonantes) . filter letraFinalPermitida 
-
-
--- Se queda con las palabras que no tengan tres consonantes seguidas.
-filtroConsonantes :: [String] -> [String]
-filtroConsonantes = filter (not . consonantesSeguidas)
 
 
 -- Comprueba si una palabra empieza correctamente: con vocal, con dos consonantes permitidas o con consonante y vocal.
@@ -96,6 +124,7 @@ empiezaBien _ = False
 -- Filtra las palabras que empiezan con dos consonantes permitidas.
 filtroInicioPalabra :: [String] -> [String]
 filtroInicioPalabra = filter empiezaBien
+
 
 -- Comprueba si una palabra sigue las reglas básicas de silabificación.
 cumpleSilabificacion :: String -> Bool
@@ -116,7 +145,7 @@ filtroSilabas = filter cumpleSilabificacion
 
 -- Filtra las palabras según todas las reglas de filtrado.
 filtrarPalabras :: String -> [String]
-filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filtroFinalPalabra . filtroVocales . filtroLongitud . combinaciones
+filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filtroFinalPalabra . filtroOrtografia . filtroVocales . filtroLongitud . combinaciones
 
 
 ------------------------------------------------------------
