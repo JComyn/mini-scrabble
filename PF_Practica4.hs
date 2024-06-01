@@ -13,6 +13,7 @@ import Control.Monad (replicateM)
 combinaciones :: String -> [String]
 combinaciones s = eliminarDuplicados $ concatMap (filter (not . null) . permutations) (subsequences s)
 
+-- Elimina los elementos duplicados de una lista.
 eliminarDuplicados :: Ord a => [a] -> [a]
 eliminarDuplicados = Set.toList . Set.fromList
 
@@ -25,37 +26,40 @@ esConsonante :: Char -> Bool
 esConsonante = not . esVocal
 
 -- Se queda con las palabras que tengan al menos dos caracteres.
-filtrado1 :: [String] -> [String]
-filtrado1 = filter (\x -> length x > 3)
+filtroLongitud :: [String] -> [String]
+filtroLongitud = filter (\x -> length x > 3)
 
 -- Comprueba si hay dos vocales IGUALES seguidas iguales en una palabra.
-vocalesSeguidas :: String -> Bool
-vocalesSeguidas (x:y:xs) = (esVocal x && esVocal y && x==y) || vocalesSeguidas (y:xs)
-vocalesSeguidas _ = False
+vocalesIgualesSeguidas :: String -> Bool
+vocalesIgualesSeguidas (x:y:xs) = (esVocal x && esVocal y && x==y) || vocalesIgualesSeguidas (y:xs)
+vocalesIgualesSeguidas _ = False
 
 -- Comprueba si hay tres vocales seguidas en una palabra (no necesariamente iguales).
-vocalesSeguidas2 :: String -> Bool
-vocalesSeguidas2 (x:y:z:xs) = (esVocal x && esVocal y && esVocal z) || vocalesSeguidas2 (y:z:xs)
-vocalesSeguidas2 _ = False
+vocalesTresSeguidas :: String -> Bool
+vocalesTresSeguidas (x:y:z:xs) = (esVocal x && esVocal y && esVocal z) || vocalesTresSeguidas (y:z:xs)
+vocalesTresSeguidas _ = False
 
-letraq :: String -> Bool
-letraq (x:y:xs) = not (x == 'q' && y /= 'u') && letraq (y:xs)
-letraq _ = True
+-- Tras la letra q siempre tiene que ir la letra u.
+letraQ :: String -> Bool
+letraQ (x:y:xs) = not (x == 'q' && y /= 'u') && letraQ (y:xs)
+letraQ _ = True
 
-letraz :: String -> Bool
-letraz (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o')))
-letraz _ = True
+-- Tras la letra z siempre tiene que ir a, u, o.
+letraZ :: String -> Bool
+letraZ (x:y:xs) = not (x== 'z' && ((y/= 'a') ||(y/= 'u') ||(y/= 'o')))
+letraZ _ = True
 
--- Se queda con las palabras que no tengan dos vocales IGUALES seguidas.
-filtrado2 :: [String] -> [String]
-filtrado2 = filter (not . vocalesSeguidas) . filter (not . vocalesSeguidas2) . filter letraq . filter letraz
+-- Se queda con las palabras que no tengan dos vocales IGUALES seguidas ni tres vocales seguidas.
+-- Además, se queda con las palabras que cumplan con las reglas de las letras q y z.
+filtroVocales :: [String] -> [String]
+filtroVocales = filter (not . vocalesIgualesSeguidas) . filter (not . vocalesTresSeguidas) . filter letraQ . filter letraZ
 
 
 -- Comprueba si la última letra de una palabra es válida (no puede ser k, v, w, x).
 letraFinalPermitida :: String -> Bool
 letraFinalPermitida s = last s `notElem` "hkvwxHKVWX"
 
--- Comprueba si hay dos consonantes seguidas iguales en una palabra (excepto ll y rr).
+-- Comprueba si hay tres consonantes seguidas en una palabra.
 consonantesSeguidas :: String -> Bool
 consonantesSeguidas xs = consonantesSeguidas' (tail xs)
     where
@@ -74,33 +78,24 @@ terminaEnDosConsonantes s = esConsonante x && esConsonante y
     where [x, y] = ultimosDosCaracteres s
 
 
--- Se queda con las palabras cuya última letra sea una vocal o una consonante permitida y no termina en dos consonantes seguidas.
-filtrado3 :: [String] -> [String]
-filtrado3 = filter (not . terminaEnDosConsonantes) . filter letraFinalPermitida 
+-- Se queda con las palabras cuya última letra sea válida y no termine en dos consonantes seguidas.
+filtroFinalPalabra :: [String] -> [String]
+filtroFinalPalabra = filter (not . terminaEnDosConsonantes) . filter letraFinalPermitida 
 
 
--- Se queda con las palabras que no tengan dos consonantes seguidas iguales (excepto ll y rr).
-filtrado4 :: [String] -> [String]
-filtrado4 = filter (not . consonantesSeguidas)
+-- Se queda con las palabras que no tengan tres consonantes seguidas.
+filtroConsonantes :: [String] -> [String]
+filtroConsonantes = filter (not . consonantesSeguidas)
 
--- Comprueba si una palabra empieza con dos consonantes IGUALES.
--- TODO:: Hay excepciones de dos consonantes que pueden ir al principio de una palabra. Ejemplo: "blanco".
--- Ver que combinaciones de dos consonantes son válidas.
--- empiezaConDosConsonantes :: String -> Bool
--- empiezaConDosConsonantes (x:y:_) = esConsonante x && esConsonante y && x==y
--- empiezaConDosConsonantes _ = False
 
--- Comprueba si una palabra empieza bien.
--- Dos consonantes permitidas: bl, cr, dr, fl, fr, gr, pl, pr, tr, tl, ch, ll...
--- Consonante vocal o vocal.
-
+-- Comprueba si una palabra empieza correctamente: con vocal, con dos consonantes permitidas o con consonante y vocal.
 empiezaBien :: String -> Bool
 empiezaBien (x:y:_) = esVocal x || (esConsonante x && esConsonante y && (x,y) `elem` [('b', 'l'), ('c', 'r'), ('d', 'r'), ('f', 'l'), ('f', 'r'), ('g', 'r'), ('p', 'l'), ('p', 'r'), ('t', 'r'), ('c', 'h'), ('l', 'l')]) || (esConsonante x && esVocal y)
 empiezaBien _ = False
 
 -- Filtra las palabras que empiezan con dos consonantes permitidas.
-filtrado5 :: [String] -> [String]
-filtrado5 = filter empiezaBien
+filtroInicioPalabra :: [String] -> [String]
+filtroInicioPalabra = filter empiezaBien
 
 -- Comprueba si una palabra sigue las reglas básicas de silabificación.
 cumpleSilabificacion :: String -> Bool
@@ -115,9 +110,17 @@ cumpleSilabificacion xs = cumpleSilabificacion' (tail xs)
             | otherwise = False
 
 -- Filtra las palabras que cumplen con las reglas de silabificación.
-filtrado6 :: [String] -> [String]
-filtrado6 = filter cumpleSilabificacion
+filtroSilabas :: [String] -> [String]
+filtroSilabas = filter cumpleSilabificacion
 
+
+-- Filtra las palabras según todas las reglas de filtrado.
+filtrarPalabras :: String -> [String]
+filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filtroFinalPalabra . filtroVocales . filtroLongitud . combinaciones
+
+
+------------------------------------------------------------
+-- DICCIONARIO
 -- No se si llamarlo filtrado7 por que no se puede meter bien en filtradoPalabras por las monadas 
 filtrado7 :: [String] -> IO [String]
 filtrado7 lista = do
@@ -125,17 +128,11 @@ filtrado7 lista = do
     return $ filter (`Set.member` diccionario) lista
 
 
--- Filtra las palabras según todas las reglas de filtrado.
-filtrarPalabras :: String -> [String]
-filtrarPalabras = filtrado6 . filtrado5 . filtrado4 . filtrado3 . filtrado2 . filtrado1 . combinaciones
-
-
 -- Diccionario de palabras válidas.
 cargarDiccionario :: String -> IO (Set String)
 cargarDiccionario path = do
     contenido <- readFile path
     return $ Set.fromList $ lines contenido
-
 
 tieneEnie :: String -> Bool
 tieneEnie palabra = 'ñ' `elem` palabra
@@ -175,6 +172,8 @@ imprimeDiccionario = do
     print "á"
     putStrLn "á"
 
+------------------------------------------------------------
+
 {- 
 (No usamos ñ)
 PUNTUACIÓN DE LAS LETRAS EN EL SCRABBLE
@@ -187,6 +186,7 @@ PUNTUACIÓN DE LAS LETRAS EN EL SCRABBLE
 10 puntos: Z
  -}
 
+-- Calcular la puntuación de una palabra.
 puntuacion :: String -> Int
 puntuacion (x:xs) = puntuacion' (x:xs) 0
     where
@@ -464,8 +464,3 @@ main = do
                 else do
                     putStrLn "Opción inválida. Intente de nuevo."
                     main
-
-
-
-
-    
