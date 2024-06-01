@@ -150,14 +150,10 @@ filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filt
 
 ------------------------------------------------------------
 -- DICCIONARIO
--- No se si llamarlo filtrado7 por que no se puede meter bien en filtradoPalabras por las monadas 
-filtrado7 :: [String] -> IO [String]
-filtrado7 lista = do
-    dicc <- cargarDiccionario "dicFiltrado.txt"
-    return $ filter (`Set.member` dicc) lista
+------------------------------------------------------------
 
-
--- Diccionario de palabras válidas.
+-- Convierte el archivo en una lista de palabras.
+-- Se llamara con el diccionario normalizado.
 cargarDiccionario :: String -> IO (Set String)
 cargarDiccionario path = do
     contenido <- readFile path
@@ -166,11 +162,8 @@ cargarDiccionario path = do
 tieneEnie :: String -> Bool
 tieneEnie palabra = 'ñ' `elem` palabra
 
-tieneTilde :: String -> Bool
-tieneTilde = any (`elem` "áéíóú") 
-
 tieneEspacio :: String -> Bool
-tieneEspacio = any (== ' ')
+tieneEspacio = elem ' '
 
 -- Poner vocal normal sin tilde (normalizar).
 normalizar :: String -> String
@@ -209,6 +202,11 @@ normalizar (x:xs)
   | x == 'Z' = 'z' : normalizar xs
   | otherwise = x : normalizar xs
 
+-- Aplica las funciones anteriores para normalizar el diccionario:
+-- 1. Elimina las palabras con ñ.
+-- 2. Elimina las palabras con espacios.
+-- 3. Normaliza las palabras.
+-- 4. Escribe el diccionario normalizado en un archivo.
 normalizaDiccionario :: String -> IO ()
 normalizaDiccionario path = do
     contenido <- readFile path
@@ -224,8 +222,13 @@ imprimeDiccionario = do
     diccionario <-cargarDiccionario "dicFiltrado.txt"
     let listaDiccionario = Set.toList diccionario
     print listaDiccionario
-    print "á"
-    putStrLn "á"
+
+-- Filtra las palabras del diccionario que estén en la lista de palabras válidas.
+filtraDiccionario :: [String] -> IO [String]
+filtraDiccionario lista = do
+    dicc <- cargarDiccionario "dicFiltrado.txt"
+    return $ filter (`Set.member` dicc) lista
+
 
 ------------------------------------------------------------
 
@@ -370,7 +373,7 @@ obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
     jugada <- getLine
     let lista = filtrarPalabras mano
-    palabrasDiccionario <- filtrado7 lista
+    palabrasDiccionario <- filtraDiccionario lista
     if jugada `elem` palabrasDiccionario
         then return jugada
         else do
@@ -385,7 +388,7 @@ obtenerJugada mano = do
 resolucionJugada :: String -> IO Int
 resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
-    palabrasDiccionario <- filtrado7 lista
+    palabrasDiccionario <- filtraDiccionario lista
     putStrLn "Las palabras válidas que se pueden formar con sus letras son: "
     print palabrasDiccionario
     -- Se le pide al jugar que introduzca una jugada.
@@ -400,9 +403,75 @@ resolucionJugada entrada = do
     print $ take 5 $ maximaPuntuacion $ puntuarPalabras palabrasDiccionario
     return puntuacion
 
--- Jugar con un solo jugador.
-jugar1Jugador :: IO ()
-jugar1Jugador = do
+
+--modoPractica :: IO ()
+--modoPractica = do
+--    putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
+--    _ <- getLine
+--    entrada <- repartirMano bolsaFichas
+--    putStrLn ("Su mano es: " ++ entrada)
+  
+--    caracter1 <- vocalAleatoria
+--    caracter2 <- vocalAleatoria
+--    putStrLn ("Tienes disponibles estos caracteres: " ++ show caracter1 ++ " y " ++ show caracter2)
+    --putStrLn "Presione 0 para el primer carácter y 1 para el segundo carácter"
+--    nuevaEntrada <- aumentarMano entrada caracter1 caracter2
+    --eleccion <- getLine
+    --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
+    -- resolucion de la jugada
+--    resolucionJugada nuevaEntrada
+--    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
+--    opcion <- getLine
+--    if opcion == "q"
+--        then putStrLn "¡Gracias por jugar!"
+--        else main
+
+
+
+-- Jugar con dos jugadores.
+--jugar2Jugadores :: IO ()
+--jugar2Jugadores = do
+--    putStrLn "Se van a generar las letras del tablero:"
+--    caracter1 <- vocalAleatoria
+--    caracter2 <- vocalAleatoria
+
+--    putStrLn "Ahora se repatira la mano al jugador 1"
+--    entrada1 <- repartirMano bolsaFichas
+    -- Actualizar la bolsa de fichas.
+--    let nuevaBolsaFichas = nuevaBolsa bolsaFichas entrada1
+    -- putStrLn ("la nueva bolsa es : " ++ nuevaBolsaFichas)
+
+--    putStrLn ("Su mano es: " ++ entrada1)
+--    nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
+
+--    puntuacion1 <- resolucionJugada nuevaEntrada1
+
+--    putStrLn "Ahora se repatira la mano al jugador 2"
+--    entrada2 <- repartirMano nuevaBolsaFichas
+--    putStrLn ("Su mano es: " ++ entrada2)
+--    nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
+
+--   puntuacion2 <- resolucionJugada nuevaEntrada2
+
+--    putStrLn "Puntuación final:"
+--    putStrLn ("Jugador 1: " ++ show puntuacion1)
+--    putStrLn ("Jugador 2: " ++ show puntuacion2)
+--    if puntuacion1 > puntuacion2
+--        then putStrLn "¡El jugador 1 ha ganado!"
+--        else if puntuacion2 > puntuacion1
+ --           then putStrLn "¡El jugador 2 ha ganado!"
+--            else putStrLn "¡Empate!"
+
+--    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
+--    opcion <- getLine
+--    if opcion == "q"
+--        then putStrLn "¡Gracias por jugar!"
+--        else main
+
+
+jugar1Jugador :: Integer -> Integer -> IO Integer
+jugar1Jugador 0 puntuacion = return puntuacion
+jugar1Jugador rondas puntuacion= do
     putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
     _ <- getLine
     entrada <- repartirMano bolsaFichas
@@ -411,42 +480,25 @@ jugar1Jugador = do
     caracter1 <- vocalAleatoria
     caracter2 <- vocalAleatoria
     putStrLn ("Tienes disponibles estos caracteres: " ++ show caracter1 ++ " y " ++ show caracter2)
-    --putStrLn "Presione 0 para el primer carácter y 1 para el segundo carácter"
+    
     nuevaEntrada <- aumentarMano entrada caracter1 caracter2
-    --eleccion <- getLine
-    --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
-    -- resolucion de la jugada
-    resolucionJugada nuevaEntrada
-    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
-    opcion <- getLine
-    if opcion == "q"
-        then putStrLn "¡Gracias por jugar!"
-        else main
+ 
+    puntos <- resolucionJugada nuevaEntrada
+    jugar1Jugador (rondas-1) (puntuacion + (toInteger puntos))
+     
 
--- Jugar con dos jugadores.
-jugar2Jugadores :: IO ()
-jugar2Jugadores = do
-    putStrLn "Se van a generar las letras del tablero:"
-    caracter1 <- vocalAleatoria
-    caracter2 <- vocalAleatoria
+-- Juego de 2 jugadores.
+-- n = 0 -> 1 ronda (Modo Clasico)
+-- n = 3 -> 3 rondas (Modo Rondas)
+jugar2JugadoresRondas :: Integer ->  IO ()
+jugar2JugadoresRondas n = do
+    putStrLn "Has seleccionado el modo 1v1. Se jugarán 3 rondas. ¡Buena suerte!"
 
-    putStrLn "Ahora se repatira la mano al jugador 1"
-    entrada1 <- repartirMano bolsaFichas
-    -- Actualizar la bolsa de fichas.
-    let nuevaBolsaFichas = nuevaBolsa bolsaFichas entrada1
-    -- putStrLn ("la nueva bolsa es : " ++ nuevaBolsaFichas)
-
-    putStrLn ("Su mano es: " ++ entrada1)
-    nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
-
-    puntuacion1 <- resolucionJugada nuevaEntrada1
-
+    putStrLn "Ahora jugara el jugador 1"
+    puntuacion1 <- jugar1Jugador n 0
+    
     putStrLn "Ahora se repatira la mano al jugador 2"
-    entrada2 <- repartirMano nuevaBolsaFichas
-    putStrLn ("Su mano es: " ++ entrada2)
-    nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
-
-    puntuacion2 <- resolucionJugada nuevaEntrada2
+    puntuacion2 <- jugar1Jugador n 0
 
     putStrLn "Puntuación final:"
     putStrLn ("Jugador 1: " ++ show puntuacion1)
@@ -463,17 +515,51 @@ jugar2Jugadores = do
         then putStrLn "¡Gracias por jugar!"
         else main
 
+
+-- Menu de opciones para el juego de 2 jugadores.
+unoContraUno :: IO ()
+unoContraUno = do
+    putStrLn "¿Que desea hacer?"
+    putStrLn "1. Modo Clasico (1 ronda)"
+    putStrLn "2. Modo Rondas (3 rondas)"
+    putStrLn "3. Salir"
+    opcion <- getLine
+    if opcion == "1" 
+        then do
+            jugar2JugadoresRondas 1
+        else if opcion == "2"
+            then do 
+                 jugar2JugadoresRondas 3
+            else if opcion == "3"
+                then do
+                    putStrLn "¡Gracias por jugar!"
+                else do
+                    putStrLn "Opción inválida. Intente de nuevo."
+                    unoContraUno
+
+
+-- Jugar con un solo jugador.
+modoPractica :: IO ()
+modoPractica = do
+    jugar1Jugador 1 0
+    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
+    opcion <- getLine
+    if opcion == "q"
+        then putStrLn "¡Gracias por jugar!"
+        else main
+
+
 -- Juego Mini-Scrabble.
 jugar :: IO ()
 jugar = do
-    putStrLn "¿Cuántos jugadores van a jugar?"
-    putStrLn "1. Un jugador"
-    putStrLn "2. Dos jugadores"
+    putStrLn "¿Que quieres hacer?"
+    putStrLn "1. Modo Practica"
+    putStrLn "2. 1v1"
     opcion <- getLine
     if opcion == "1"
-        then jugar1Jugador
+        then modoPractica
         else if opcion == "2"
-            then jugar2Jugadores
+            then unoContraUno
             else do
                 putStrLn "Opción inválida. Intente de nuevo."
                 jugar
@@ -490,8 +576,13 @@ opcionesJuego = do
     putStrLn "|  xxxxxx  |           |   y  y   |"
     putStrLn "|__________|           |__________|"
 
-    putStrLn "Pueden jugar hasta 2 jugadores."
-    putStrLn "En dicho caso, jugara primero el jugador 1 y luego el jugador 2."
+    putStrLn "Los modos de juego son los siguientes:"
+    putStrLn "          1. Modo Practica: Juega solo y forma palabras con las letras de tu mano."
+    putStrLn "          2. 1v1: Juega contra otro jugador. "
+    putStrLn "           ->  2.1 Modo Clasico: Se juega una ronda."
+    putStrLn "           ->  2.2 Modo Rondas: Se juegan 3 rondas"
+    putStrLn "En el caso de 2. jugara primero el jugador 1 y luego el jugador 2."
+    putStrLn "El jugador con mayor puntuación al final de las 3 rondas gana."
 
     putStrLn "Para formar una palabra, seleccione una letra de su mano y una del tablero."
     putStrLn "La puntación de la palabra dependerá de las letras seleccionadas."
