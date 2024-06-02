@@ -3,6 +3,7 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 import System.Random (randomRIO)
 import Control.Monad (replicateM)
+import Text.Printf (printf)
 
 
 
@@ -162,6 +163,8 @@ filtrarPalabras = filtroSilabas . filtroInicioPalabra . filtroConsonantes . filt
 ------------------------------------------------------------
 -- DICCIONARIO
 ------------------------------------------------------------
+-- El diccionario se encuentra en el archivo "dicFiltrado.txt".
+-- Se utilizará para comprobar cuantas de las palabras filtradas existen realmente.
 
 -- Convierte el archivo en una lista de palabras.
 -- Se llamara con el diccionario normalizado.
@@ -344,12 +347,6 @@ repartirMano' xs n = do
     return ((xs !! i) : rest)
 
 
---repartirMano :: IO String
---repartirMano = do
---    caracteres <- replicateM 4 caracterAleatorio
---    vocales <- replicateM 2 vocalAleatoria
---    return (caracteres ++ vocales)
-
 -- Aumentar la mano con una letra del tablero.
 aumentarMano :: String -> Char -> Char -> IO String
 aumentarMano mano a b = do
@@ -383,8 +380,8 @@ obtenerJugada mano = do
     putStrLn "Introduzca su jugada y presione enter para continuar"
     jugada <- getLine
     let lista = filtrarPalabras mano
-    palabrasDiccionario <- filtraDiccionario lista
-    if jugada `elem` palabrasDiccionario
+    -- palabrasDiccionario <- filtraDiccionario lista
+    if jugada `elem` lista
         then return jugada
         else do
             putStrLn "Jugada inválida, palabra no existente. Intente de nuevo."
@@ -400,7 +397,12 @@ resolucionJugada entrada = do
     let lista = filtrarPalabras entrada
     palabrasDiccionario <- filtraDiccionario lista
     putStrLn "Las palabras válidas que se pueden formar con sus letras son: "
-    print palabrasDiccionario
+    print lista
+    putStrLn ("Un total de " ++ show (length lista) ++ " palabras")
+    putStrLn ("De estas palabras, en el diccionario solo hay " ++ show (length palabrasDiccionario))
+    putStrLn ("Es decir, el porcentaje de palabras filtradas que realmente existen es del " ++ printf "%.2f" ((fromIntegral (length palabrasDiccionario) * 100 / fromIntegral (length lista)) :: Double) ++ "%")
+    putStrLn ""
+
     -- Se le pide al jugar que introduzca una jugada.
     putStrLn ("Su nueva mano es: " ++ entrada)
     jugada <- obtenerJugada entrada
@@ -410,73 +412,8 @@ resolucionJugada entrada = do
 
     putStrLn "Algunas palabras con la máxima puntuación son:"
     -- Limitamos la salida a 5 palabras, para no saturar la consola.
-    print $ take 5 $ maximaPuntuacion $ puntuarPalabras palabrasDiccionario
+    print $ take 5 $ maximaPuntuacion $ puntuarPalabras lista
     return puntuacion
-
-
---modoPractica :: IO ()
---modoPractica = do
---    putStrLn "Se le va a repartir una mano de 6 letras aleatorias. Presione cualquier tecla para continuar."
---    _ <- getLine
---    entrada <- repartirMano bolsaFichas
---    putStrLn ("Su mano es: " ++ entrada)
-  
---    caracter1 <- vocalAleatoria
---    caracter2 <- vocalAleatoria
---    putStrLn ("Tienes disponibles estos caracteres: " ++ show caracter1 ++ " y " ++ show caracter2)
-    --putStrLn "Presione 0 para el primer carácter y 1 para el segundo carácter"
---    nuevaEntrada <- aumentarMano entrada caracter1 caracter2
-    --eleccion <- getLine
-    --let entradaModificada = if eleccion == "0" then entrada ++ [caracter1] else entrada ++ [caracter2]
-    -- resolucion de la jugada
---    resolucionJugada nuevaEntrada
---    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
---    opcion <- getLine
---    if opcion == "q"
---        then putStrLn "¡Gracias por jugar!"
---        else main
-
-
-
--- Jugar con dos jugadores.
---jugar2Jugadores :: IO ()
---jugar2Jugadores = do
---    putStrLn "Se van a generar las letras del tablero:"
---    caracter1 <- vocalAleatoria
---    caracter2 <- vocalAleatoria
-
---    putStrLn "Ahora se repatira la mano al jugador 1"
---    entrada1 <- repartirMano bolsaFichas
-    -- Actualizar la bolsa de fichas.
---    let nuevaBolsaFichas = nuevaBolsa bolsaFichas entrada1
-    -- putStrLn ("la nueva bolsa es : " ++ nuevaBolsaFichas)
-
---    putStrLn ("Su mano es: " ++ entrada1)
---    nuevaEntrada1 <- aumentarMano entrada1 caracter1 caracter2
-
---    puntuacion1 <- resolucionJugada nuevaEntrada1
-
---    putStrLn "Ahora se repatira la mano al jugador 2"
---    entrada2 <- repartirMano nuevaBolsaFichas
---    putStrLn ("Su mano es: " ++ entrada2)
---    nuevaEntrada2 <- aumentarMano entrada2 caracter1 caracter2
-
---   puntuacion2 <- resolucionJugada nuevaEntrada2
-
---    putStrLn "Puntuación final:"
---    putStrLn ("Jugador 1: " ++ show puntuacion1)
---    putStrLn ("Jugador 2: " ++ show puntuacion2)
---    if puntuacion1 > puntuacion2
---        then putStrLn "¡El jugador 1 ha ganado!"
---        else if puntuacion2 > puntuacion1
- --           then putStrLn "¡El jugador 2 ha ganado!"
---            else putStrLn "¡Empate!"
-
---    putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
---    opcion <- getLine
---    if opcion == "q"
---        then putStrLn "¡Gracias por jugar!"
---        else main
 
 
 jugar1Jugador :: Integer -> Integer -> IO Integer
@@ -494,7 +431,7 @@ jugar1Jugador rondas puntuacion= do
     nuevaEntrada <- aumentarMano entrada caracter1 caracter2
  
     puntos <- resolucionJugada nuevaEntrada
-    jugar1Jugador (rondas-1) (puntuacion + (toInteger puntos))
+    jugar1Jugador (rondas-1) (puntuacion + toInteger puntos)
      
 
 -- Juego de 2 jugadores.
