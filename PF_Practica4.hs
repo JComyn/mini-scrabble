@@ -22,17 +22,23 @@ esVocal c = c `elem` "aeiouAEIOU"
 esConsonante :: Char -> Bool
 esConsonante = not . esVocal
 
--- Se queda con las palabras que tengan al menos dos caracteres.
+-- Se queda con las palabras que tengan al menos cuatro caracteres.
 filtroLongitud :: [String] -> [String]
 filtroLongitud = filter (\x -> length x > 3)
 
 
 -- Comprueba si hay dos vocales IGUALES seguidas iguales en una palabra.
+-- Se tienen en cuenta algunas de las excepciones más comunes: leer, zoo, cooperar, poseer
 vocalesIgualesSeguidas :: String -> Bool
+vocalesIgualesSeguidas "leer" = False
+vocalesIgualesSeguidas "zoo" = False
+vocalesIgualesSeguidas "cooperar" = False
+vocalesIgualesSeguidas "poseer" = False
 vocalesIgualesSeguidas (x:y:xs) = (esVocal x && esVocal y && x==y) || vocalesIgualesSeguidas (y:xs)
 vocalesIgualesSeguidas _ = False
 
 -- Comprueba si hay tres vocales seguidas en una palabra (no necesariamente iguales).
+-- Las posibles excepciones suelen ser conjugaciones de verbos, que no suelen ser válidas en el Scrabble.
 vocalesTresSeguidas :: String -> Bool
 vocalesTresSeguidas (x:y:z:xs) = (esVocal x && esVocal y && esVocal z) || vocalesTresSeguidas (y:z:xs)
 vocalesTresSeguidas _ = False
@@ -106,7 +112,12 @@ ultimosDosCaracteres :: String -> String
 ultimosDosCaracteres str = drop (length str - 2) str
 
 -- Comprueba si la palabra no termina en dos consonantes seguidas.
+-- Se tienen en cuenta excepciones comunes como: iceberg, test, vals, biceps.
 terminaEnDosConsonantes :: String -> Bool
+terminaEnDosConsonantes "iceberg" = False
+terminaEnDosConsonantes "test" = False
+terminaEnDosConsonantes "vals" = False
+terminaEnDosConsonantes "biceps" = False
 terminaEnDosConsonantes [x] = True
 terminaEnDosConsonantes s = esConsonante x && esConsonante y
     where [x, y] = ultimosDosCaracteres s
@@ -320,7 +331,6 @@ nuevaBolsa xs [] = xs
 nuevaBolsa xs (y:ys) = nuevaBolsa (delete y xs) ys
 
 
-
 -- Recibe una bolsa de fichas y reparte una mano de 6 letras aleatorias.
 repartirMano :: [Char] -> IO [Char]
 repartirMano xs = repartirMano' xs 6
@@ -492,7 +502,7 @@ jugar1Jugador rondas puntuacion= do
 -- n = 3 -> 3 rondas (Modo Rondas)
 jugar2JugadoresRondas :: Integer ->  IO ()
 jugar2JugadoresRondas n = do
-    putStrLn "Has seleccionado el modo 1v1. Se jugarán 3 rondas. ¡Buena suerte!"
+    putStrLn ("Has seleccionado el modo 1v1. Se jugarán " ++ show n ++ " rondas. ¡Buena suerte!")
 
     putStrLn "Ahora jugara el jugador 1"
     puntuacion1 <- jugar1Jugador n 0
@@ -508,6 +518,7 @@ jugar2JugadoresRondas n = do
         else if puntuacion2 > puntuacion1
             then putStrLn "¡El jugador 2 ha ganado!"
             else putStrLn "¡Empate!"
+    putStrLn ""
 
     putStrLn "Pulsa q para salir o cualquier otra tecla para volver a jugar."
     opcion <- getLine
@@ -520,7 +531,7 @@ jugar2JugadoresRondas n = do
 unoContraUno :: IO ()
 unoContraUno = do
     putStrLn "¿Que desea hacer?"
-    putStrLn "1. Modo Clasico (1 ronda)"
+    putStrLn "1. Modo Clásico (1 ronda)"
     putStrLn "2. Modo Rondas (3 rondas)"
     putStrLn "3. Salir"
     opcion <- getLine
@@ -552,8 +563,8 @@ modoPractica = do
 -- Juego Mini-Scrabble.
 jugar :: IO ()
 jugar = do
-    putStrLn "¿Que quieres hacer?"
-    putStrLn "1. Modo Practica"
+    putStrLn "¿Qué quieres hacer?"
+    putStrLn "1. Modo Práctica"
     putStrLn "2. 1v1"
     opcion <- getLine
     if opcion == "1"
@@ -567,6 +578,7 @@ jugar = do
 -- Menú de opciones del juego.
 opcionesJuego :: IO ()
 opcionesJuego = do 
+    putStrLn ""
     putStrLn "Al comenzar a jugar se le repartirá una mano de 6 letras aleatorias."
     putStrLn "Y en el tablero se le mostraran 2 posibles letras adicionales."
   
@@ -577,9 +589,9 @@ opcionesJuego = do
     putStrLn "|__________|           |__________|"
 
     putStrLn "Los modos de juego son los siguientes:"
-    putStrLn "          1. Modo Practica: Juega solo y forma palabras con las letras de tu mano."
+    putStrLn "          1. Modo Práctica: Juega solo y forma palabras con las letras de tu mano."
     putStrLn "          2. 1v1: Juega contra otro jugador. "
-    putStrLn "           ->  2.1 Modo Clasico: Se juega una ronda."
+    putStrLn "           ->  2.1 Modo Clásico: Se juega una ronda."
     putStrLn "           ->  2.2 Modo Rondas: Se juegan 3 rondas"
     putStrLn "En el caso de 2. jugara primero el jugador 1 y luego el jugador 2."
     putStrLn "El jugador con mayor puntuación al final de las 3 rondas gana."
@@ -589,15 +601,16 @@ opcionesJuego = do
     putStrLn "Las letras del tablero y de la mano se pueden usar una sola vez."
     putStrLn "Puede que la palabra formada no sea válida, en ese caso, intente de nuevo."
     putStrLn "Pulse cualquier tecla para volver al menú principal. ¡Buena suerte!"
+    putStrLn ""
     _ <- getLine
     main
 
 main :: IO ()
 main = do
     putStrLn "Bienvenido a Mini-Scrabble"
-    putStrLn "¿Que desea hacer?"
+    putStrLn "¿Qué desea hacer?"
     putStrLn "1. Jugar"
-    putStrLn "2. Como se juega"
+    putStrLn "2. ¿Cómo se juega?"
     putStrLn "3. Salir"
     opcion <- getLine
     if opcion == "1" 
